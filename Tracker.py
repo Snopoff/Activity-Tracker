@@ -27,6 +27,15 @@ def get_window_name(title):
 
 def get_active_tab_name(title):
     """Return correct name of tab that is active in Google Chrome"""
+    pattern = r"b'(?P<title>.*)\\n'"  # pattern for searching the correct title
+    correct_title = re.search(pattern, title).group(
+        'title').split(' - ')
+    try:
+        name = "'{name}' on {resourse}".format(
+            name=correct_title[-3], resourse=correct_title[-2])
+    except IndexError:
+        name = correct_title[-2]
+    return re.sub(pattern, name, title)
 
 
 def get_active_window_title():  # command is xdotool getwindowfocus getwindowname
