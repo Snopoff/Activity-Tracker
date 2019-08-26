@@ -13,6 +13,7 @@ import datetime as dt
 import csv
 import os.path as op
 import re
+from time import sleep
 
 
 def get_window_name(title):
@@ -28,12 +29,13 @@ def get_active_tab_name(title):
     """Return correct name of tab that is active in Google Chrome"""
     pattern = r"b'(?P<title>.*)\\n'"  # pattern for searching the correct title
     correct_title = re.search(pattern, title).group(
-        'title').split(' - ')
+        'title').split(' - ')  # if there's a backslash -- remove it
     try:  # try get 3rd element from the end
         name = "'{name}' on {resourse}".format(
             name=correct_title[-3], resourse=correct_title[-2])
     except IndexError:
         name = correct_title[-2]
+    name = re.sub(r"\\x.* ", '', name)  # in case there are substrs like '\xd8'
     return re.sub(pattern, name, title)
 
 
@@ -50,7 +52,7 @@ def get_active_window_title():  # command is xdotool getwindowfocus getwindownam
 def write_CSV(current_window, current_time):
     """Write information about window and time in CSV file."""
     file_name = current_time.date().__str__() + ".csv"  # path to file
-    info = [current_window.__str__(), current_time.__str__()
+    info = [current_window.__str__(), current_time.replace(microsecond=0).__str__()
             ]  # information to write
 
     if op.isfile(file_name):  # if file exists
@@ -71,3 +73,4 @@ if __name__ == "__main__":
             current_window = new_window  # assign new current window
             current_time = dt.datetime.now()  # get current time
             write_CSV(current_window, current_time)
+    sleep(0.2)
