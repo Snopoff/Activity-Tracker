@@ -5,7 +5,6 @@
 Activity Tracker
 
 #TODO:
-    - Get Chrome Tab name
     - Summarize daily data and plot it using plt.pie
 '''
 
@@ -30,7 +29,7 @@ def get_active_tab_name(title):
     pattern = r"b'(?P<title>.*)\\n'"  # pattern for searching the correct title
     correct_title = re.search(pattern, title).group(
         'title').split(' - ')
-    try:
+    try:  # try get 3rd element from the end
         name = "'{name}' on {resourse}".format(
             name=correct_title[-3], resourse=correct_title[-2])
     except IndexError:
@@ -41,11 +40,11 @@ def get_active_tab_name(title):
 def get_active_window_title():  # command is xdotool getwindowfocus getwindowname
     """Returns current active window."""
     command = "xdotool getwindowfocus getwindowname"
-    title = sp.check_output(command.split())
-    if 'Google Chrome' in title.__str__():  # if Google Chrome is opened
-        return get_active_tab_name(title.__str__())
+    title = sp.check_output(command.split()).__str__()
+    if 'Google Chrome' in title:  # if Google Chrome is opened
+        return get_active_tab_name(title)
     else:
-        return get_window_name(title.__str__())
+        return get_window_name(title)
 
 
 def write_CSV(current_window, current_time):
