@@ -4,8 +4,11 @@
 
 Activity Tracker
 
-#TODO:
-    - Summarize daily data and plot it using plt.pie
+# TODO:
+    - Group time info with same window name
+    - Sort by time
+    - Plot first, let's say, 5 window names and group other name as others
+    - Save plot picture
 '''
 
 import subprocess as sp
@@ -14,6 +17,7 @@ import csv
 import os.path as op
 import re
 from time import sleep
+import pandas as pd
 
 
 def get_window_name(title):
@@ -52,7 +56,7 @@ def get_active_window_title():  # command is xdotool getwindowfocus getwindownam
 def write_CSV(current_window, current_time):
     """Write information about window and time in CSV file."""
     file_name = current_time.date().__str__() + ".csv"  # path to file
-    info = [current_window.__str__(), current_time.replace(microsecond=0).__str__()
+    info = [current_window.__str__(), current_time.time().replace(microsecond=0).__str__()
             ]  # information to write
 
     if op.isfile(file_name):  # if file exists
@@ -65,12 +69,42 @@ def write_CSV(current_window, current_time):
             writer.writerow(["window", "start_time"])
 
 
+def plot_activity(file_name):
+    """Plot daily activity"""
+    df = pd.read_csv(file_name)
+    df = df[df.window != 'Untitled']
+    time = []
+    for i in range(len(df)-1):
+        # str to datetime object
+        end = dt.datetime.strptime(df.iloc[i+1].loc['start_time'], '%H:%M:%S')
+        start = dt.datetime.strptime(df.iloc[i].loc['start_time'], '%H:%M:%S')
+        # get timedelta and append it to the list
+        time.append((end - start).total_seconds())
+    # get the timedelta of last activity
+    time.append((dt.datetime.strptime('23:59:59', '%H:%M:%S') -
+                 dt.datetime.strptime(df.iloc[-1].loc['start_time'], '%H:%M:%S')).total_seconds())
+
+    df = pd.concat([df, pd.Series(time, name='spent_time')],
+                   axis=1, join='inner')  # add 'time' list to dataframe
+    df.drop(['start_time'], axis=1, inplace=True)  # delete 'start_time' column
+    df.index = df['window']  # set index as 'window' due to plotting
+    df.plot.pie(y='spent_time')  # plot(works in Jupyter Lab)
+    #fig = pie[0].get_figure()
+    #pict_name = 'Plots/' + file_name + ".pdf"
+    # fig.savefig(pict_name)
+
+
 if __name__ == "__main__":
     current_window = None
     while True:
         new_window = get_active_window_title()  # get new active window
+        new_time = dt.datetime.now()  # get current time
         if new_window != current_window:  # if it differs of the current one
             current_window = new_window  # assign new current window
-            current_time = dt.datetime.now()  # get current time
+            current_time = new_time
             write_CSV(current_window, current_time)
-    sleep(0.2)
+        if current_time.date() != new_time.date():  # if a new day started
+            # plot prev day activity
+            plot_activity(current_time.date().__str__())
+
+        sleep(0.2)
