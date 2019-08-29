@@ -5,10 +5,8 @@
 Activity Tracker
 
 # TODO:
-    - Group time info with same window name
-    - Sort by time
-    - Plot first, let's say, 5 window names and group other name as others
-    - Save plot picture
+    - Format plotting
+    - Use telegram bot to send plots
 '''
 
 import subprocess as sp
@@ -55,7 +53,7 @@ def get_active_window_title():  # command is xdotool getwindowfocus getwindownam
 
 def write_CSV(current_window, current_time):
     """Write information about window and time in CSV file."""
-    file_name = current_time.date().__str__() + ".csv"  # path to file
+    file_name = "Data/" + current_time.date().__str__() + ".csv"  # path to file
     info = [current_window.__str__(), current_time.time().replace(microsecond=0).__str__()
             ]  # information to write
 
@@ -71,7 +69,7 @@ def write_CSV(current_window, current_time):
 
 def plot_activity(file_name):
     """Plot daily activity"""
-    df = pd.read_csv(file_name)
+    df = pd.read_csv("Data/"+file_name)
     df = df[df.window != 'Untitled']
     time = []
     for i in range(len(df)-1):
@@ -88,10 +86,10 @@ def plot_activity(file_name):
                    axis=1, join='inner')  # add 'time' list to dataframe
     df.drop(['start_time'], axis=1, inplace=True)  # delete 'start_time' column
     df.index = df['window']  # set index as 'window' due to plotting
-    df.plot.pie(y='spent_time')  # plot(works in Jupyter Lab)
-    #fig = pie[0].get_figure()
-    #pict_name = 'Plots/' + file_name + ".pdf"
-    # fig.savefig(pict_name)
+    fig = df.plot.pie(y='spent_time', legend=False,  # get figure
+                      label="").get_figure()  # label = "" in order to remove column name
+    pict_name = 'Plots/' + file_name[:-4] + ".pdf"
+    fig.savefig(pict_name)  # save it
 
 
 if __name__ == "__main__":
