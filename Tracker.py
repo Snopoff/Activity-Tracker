@@ -37,7 +37,11 @@ def get_active_tab_name(title):
             name=correct_title[-3], resourse=correct_title[-2])
     except IndexError:
         name = correct_title[-2]
-    name = re.sub(r"\\x.* ", '', name)  # in case there are substrs like '\xd8'
+    # in case there are substrs like '\xd8'
+    name = re.sub(r"\W", "", re.sub(
+        r"\\x([a-z]|\d){2}?", '', name))
+    print(name)
+    name = "Website" if name == '' else name
     return re.sub(pattern, name, title)
 
 
