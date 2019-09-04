@@ -38,10 +38,10 @@ def get_active_tab_name(title):
     except IndexError:
         name = correct_title[-2]
     # in case there are substrs like '\xd8'
-    name = re.sub(r"\W", "", re.sub(
-        r"\\x([a-z]|\d){2}?", '', name))
-    print(name)
-    name = "Website" if name == '' else name
+    # it still can have symbols like '/' or '"'
+    name = re.sub(r"[^a-zA-Z0-9_ ]", "", re.sub(
+        r"\\x([a-z]|\d){2}", '', name))
+    name = "Website" if name.isspace() else name
     return re.sub(pattern, name, title)
 
 
@@ -73,7 +73,7 @@ def write_CSV(current_window, current_time):
 
 def plot_activity(file_name):
     """Plot daily activity"""
-    df = pd.read_csv("Data/"+file_name)
+    df = pd.read_csv("Data/"+file_name+".csv")
     df = df[df.window != 'Untitled']
     time = []
     for i in range(len(df)-1):
@@ -88,7 +88,8 @@ def plot_activity(file_name):
 
     df = pd.concat([df, pd.Series(time, name='spent_time')],
                    axis=1, join='inner')  # add 'time' list to dataframe
-    df.drop(['start_time'], axis=1, inplace=True)  # delete 'start_time' column
+    # delete 'start_time' column
+    df.drop(['start_time'], axis=1, inplace=True)
     df.index = df['window']  # set index as 'window' due to plotting
     fig = df.plot.pie(y='spent_time', legend=False,  # get figure
                       label="").get_figure()  # label = "" in order to remove column name
