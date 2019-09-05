@@ -30,13 +30,20 @@ def get_window_name(title):
 def get_active_tab_name(title):
     """Return correct name of tab that is active in Google Chrome"""
     pattern = r"b'(?P<title>.*)\\n'"  # pattern for searching the correct title
-    correct_title = re.search(pattern, title).group(
-        'title').split(' - ')  # if there's a backslash -- remove it
+
+    try:
+        correct_title = re.search(pattern, title).group(
+            'title').split(' - ')  # if there's a backslash -- remove it
+    except AttributeError:
+        print("Error happened with this title:\n{}".format(title))
+        name = title
+
     try:  # try get 3rd element from the end
         name = "'{name}' on {resourse}".format(
             name=correct_title[-3], resourse=correct_title[-2])
     except IndexError:
         name = correct_title[-2]
+
     # in case there are substrs like '\xd8'
     # it still can have symbols like '/' or '"'
     name = re.sub(r"[^a-zA-Z0-9_ ]", "", re.sub(
