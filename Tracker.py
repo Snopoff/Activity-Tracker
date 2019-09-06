@@ -100,7 +100,7 @@ def plot_activity(file_name):
     df.index = df['window']  # set index as 'window' due to plotting
     fig = df.plot.pie(y='spent_time', legend=False,  # get figure
                       label="").get_figure()  # label = "" in order to remove column name
-    pict_name = 'Plots/' + file_name[:-4] + ".pdf"
+    pict_name = 'Plots/' + file_name + ".pdf"
     fig.savefig(pict_name)  # save it
 
 
